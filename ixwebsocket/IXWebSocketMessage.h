@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <time.h>
 #include "IXWebSocketCloseInfo.h"
 #include "IXWebSocketErrorInfo.h"
 #include "IXWebSocketMessageType.h"
@@ -17,6 +18,7 @@ namespace ix
 {
     struct WebSocketMessage
     {
+        ::timespec ts;
         WebSocketMessageType type;
         const std::string& str;
         size_t wireSize;
@@ -40,7 +42,7 @@ namespace ix
             , closeInfo(c)
             , binary(b)
         {
-            ;
+            ::clock_gettime(CLOCK_REALTIME, &ts);;
         }
 
         /**
