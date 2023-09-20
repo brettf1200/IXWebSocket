@@ -32,7 +32,8 @@ namespace ix
     const uint32_t WebSocket::kDefaultMinWaitBetweenReconnectionRetries(1);         // 1 ms
 
     WebSocket::WebSocket()
-        : _onMessageCallback(OnMessageCallback())
+        : _queue(65536)
+        , _onMessageCallback(OnMessageCallback())
         , _stop(false)
         , _automaticReconnection(true)
         , _maxWaitBetweenReconnectionRetries(kDefaultMaxWaitBetweenReconnectionRetries)
@@ -271,6 +272,14 @@ namespace ix
             return status;
         }
 
+        _queue.try_emplace(WebSocketMessageType::Open,
+                std::move(emptyMsg),
+                0,
+                WebSocketErrorInfo(),
+                WebSocketOpenInfo(status.uri, status.headers),
+                WebSocketCloseInfo());
+
+/*
         _onMessageCallback(
             ix::make_unique<WebSocketMessage>(WebSocketMessageType::Open,
                                               emptyMsg,
@@ -278,7 +287,7 @@ namespace ix
                                               WebSocketErrorInfo(),
                                               WebSocketOpenInfo(status.uri, status.headers),
                                               WebSocketCloseInfo()));
-
+*/
         if (_pingIntervalSecs > 0)
         {
             // Send a heart beat right away
@@ -359,12 +368,20 @@ namespace ix
                 connectErr.reason = status.errorStr;
                 connectErr.http_status = status.http_status;
 
+                _queue.try_emplace(WebSocketMessageType::Error,
+                        std::move(emptyMsg),
+                        0,
+                        connectErr,
+                        WebSocketOpenInfo(),
+                        WebSocketCloseInfo());
+/*
                 _onMessageCallback(ix::make_unique<WebSocketMessage>(WebSocketMessageType::Error,
                                                                      emptyMsg,
                                                                      0,
                                                                      connectErr,
                                                                      WebSocketOpenInfo(),
                                                                      WebSocketCloseInfo()));
+*/
             }
         }
     }
@@ -439,6 +456,14 @@ namespace ix
 
                     bool binary = messageKind == WebSocketTransport::MessageKind::MSG_BINARY;
 
+                    _queue.try_emplace(webSocketMessageType,
+                            std::move(msg),
+                            wireSize,
+                            webSocketErrorInfo,
+                            WebSocketOpenInfo(),
+                            WebSocketCloseInfo(),
+                            binary);
+/*
                     _onMessageCallback(ix::make_unique<WebSocketMessage>(webSocketMessageType,
                                                                          msg,
                                                                          wireSize,
@@ -446,7 +471,7 @@ namespace ix
                                                                          WebSocketOpenInfo(),
                                                                          WebSocketCloseInfo(),
                                                                          binary));
-
+*/
                     WebSocket::invokeTrafficTrackerCallback(wireSize, true);
                 });
         }

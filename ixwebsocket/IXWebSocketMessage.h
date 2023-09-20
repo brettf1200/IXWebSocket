@@ -20,7 +20,7 @@ namespace ix
     {
         ::timespec ts;
         WebSocketMessageType type;
-        const std::string& str;
+        std::string str;
         size_t wireSize;
         WebSocketErrorInfo errorInfo;
         WebSocketOpenInfo openInfo;
@@ -28,7 +28,25 @@ namespace ix
         bool binary;
 
         WebSocketMessage(WebSocketMessageType t,
-                         const std::string& s,
+                         std::string s,
+                         size_t w,
+                         WebSocketErrorInfo e,
+                         WebSocketOpenInfo o,
+                         WebSocketCloseInfo c,
+                         bool b = false)
+            : type(t)
+            , str(s)
+            , wireSize(w)
+            , errorInfo(e)
+            , openInfo(o)
+            , closeInfo(c)
+            , binary(b)
+        {
+            ::clock_gettime(CLOCK_REALTIME, &ts);;
+        }
+
+        WebSocketMessage(WebSocketMessageType t,
+                         std::string&& s,
                          size_t w,
                          WebSocketErrorInfo e,
                          WebSocketOpenInfo o,
@@ -49,6 +67,7 @@ namespace ix
          * @brief Deleted overload to prevent binding `str` to a temporary, which would cause
          * undefined behavior since class members don't extend lifetime beyond the constructor call.
          */
+        /*
         WebSocketMessage(WebSocketMessageType t,
                          std::string&& s,
                          size_t w,
@@ -56,6 +75,7 @@ namespace ix
                          WebSocketOpenInfo o,
                          WebSocketCloseInfo c,
                          bool b = false) = delete;
+        */
     };
 
     using WebSocketMessagePtr = std::unique_ptr<WebSocketMessage>;

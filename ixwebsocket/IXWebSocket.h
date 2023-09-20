@@ -19,6 +19,7 @@
 #include "IXWebSocketSendData.h"
 #include "IXWebSocketSendInfo.h"
 #include "IXWebSocketTransport.h"
+#include "readerwriterqueue.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
@@ -148,6 +149,7 @@ namespace ix
 
         mutable std::mutex _configMutex; // protect all config variables access
 
+        moodycamel::ReaderWriterQueue<ix::WebSocketMessage> _queue;
         OnMessageCallback _onMessageCallback;
         static OnTrafficTrackerCallback _onTrafficTrackerCallback;
 
