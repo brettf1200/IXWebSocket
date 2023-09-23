@@ -121,13 +121,15 @@ namespace ix
         const std::vector<std::string>& getSubProtocols();
 
         void setAutoThreadName(bool enabled);
+        bool isConnected() const;
+
+        moodycamel::ReaderWriterQueue<ix::WebSocketMessage> _queue;
 
     private:
         WebSocketSendInfo sendMessage(const IXWebSocketSendData& message,
                                       SendMessageKind sendMessageKind,
                                       const OnProgressCallback& callback = nullptr);
 
-        bool isConnected() const;
         bool isClosing() const;
         void checkConnection(bool firstConnectionAttempt);
         static void invokeTrafficTrackerCallback(size_t size, bool incoming);
@@ -149,7 +151,6 @@ namespace ix
 
         mutable std::mutex _configMutex; // protect all config variables access
 
-        moodycamel::ReaderWriterQueue<ix::WebSocketMessage> _queue;
         OnMessageCallback _onMessageCallback;
         static OnTrafficTrackerCallback _onTrafficTrackerCallback;
 
