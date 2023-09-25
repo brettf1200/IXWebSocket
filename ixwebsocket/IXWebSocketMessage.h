@@ -42,7 +42,18 @@ namespace ix
             , closeInfo(c)
             , binary(b)
         {
-            ::clock_gettime(CLOCK_REALTIME, &ts);;
+            ::clock_gettime(CLOCK_REALTIME, &ts);
+        }
+
+        WebSocketMessage() {
+            ::clock_gettime(CLOCK_REALTIME, &ts);
+            type = WebSocketMessageType::Error;
+            str = "";
+            wireSize = 0;
+            errorInfo = WebSocketErrorInfo();
+            openInfo = WebSocketOpenInfo();
+            closeInfo = WebSocketCloseInfo();
+            binary = false;
         }
 
         WebSocketMessage(WebSocketMessageType t,
