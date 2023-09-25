@@ -32,7 +32,7 @@ namespace ix
     const uint32_t WebSocket::kDefaultMinWaitBetweenReconnectionRetries(1);         // 1 ms
 
     WebSocket::WebSocket()
-        : _queue(65536)
+        : _queue{1048576} // 2^20
         , _onMessageCallback(OnMessageCallback())
         , _stop(false)
         , _automaticReconnection(true)
