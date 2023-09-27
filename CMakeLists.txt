@@ -12,6 +12,8 @@ set (CMAKE_CXX_STANDARD 11)
 set (CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_EXTENSIONS OFF)
 set (CMAKE_EXPORT_COMPILE_COMMANDS yes)
+set (USE_TLS TRUE)
+set (USE_OPEN_SSL TRUE)
 
 option (BUILD_DEMO OFF)
 
@@ -120,7 +122,7 @@ set( IXWEBSOCKET_HEADERS
 )
 
 option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" OFF)
-option(USE_TLS "Enable TLS support" 1)
+option(USE_TLS "Enable TLS support" FALSE)
 
 if (USE_TLS)
     # default to securetranport on Apple if nothing is configured
