@@ -62,17 +62,17 @@ namespace ix
 
                 // Server connection
                 state->webSocket().setOnMessageCallback(
-                    [webSocket, state, remoteIp](const WebSocketMessagePtr& msg) {
-                        if (msg->type == ix::WebSocketMessageType::Close)
+                    [webSocket, state, remoteIp](const WebSocketMessage& msg) {
+                        if (msg.type == ix::WebSocketMessageType::Close)
                         {
                             state->setTerminated();
                         }
-                        else if (msg->type == ix::WebSocketMessageType::Message)
+                        else if (msg.type == ix::WebSocketMessageType::Message)
                         {
                             auto ws = webSocket.lock();
                             if (ws)
                             {
-                                ws->send(msg->str, msg->binary);
+                                ws->send(msg.str, msg.binary);
                             }
                         }
                     });
@@ -82,14 +82,14 @@ namespace ix
                 if (ws)
                 {
                     ws->setOnMessageCallback([state, remoteUrl, remoteUrlsMapping](
-                                                 const WebSocketMessagePtr& msg) {
-                        if (msg->type == ix::WebSocketMessageType::Open)
+                                                 const WebSocketMessage& msg) {
+                        if (msg.type == ix::WebSocketMessageType::Open)
                         {
                             // Connect to the 'real' server
                             std::string url(remoteUrl);
 
                             // maybe we want a different url based on the mapping
-                            std::string host = msg->openInfo.headers["Host"];
+                            std::string host = msg.openInfo.headers["Host"];
                             auto it = remoteUrlsMapping.find(host);
                             if (it != remoteUrlsMapping.end())
                             {
@@ -98,7 +98,7 @@ namespace ix
 
                             // append the uri to form the full url
                             // (say ws://localhost:1234/foo/?bar=baz)
-                            url += msg->openInfo.uri;
+                            url += msg.openInfo.uri;
 
                             state->webSocket().setUrl(url);
                             state->webSocket().disableAutomaticReconnection();
@@ -111,13 +111,13 @@ namespace ix
                                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
                             }
                         }
-                        else if (msg->type == ix::WebSocketMessageType::Close)
+                        else if (msg.type == ix::WebSocketMessageType::Close)
                         {
-                            state->webSocket().close(msg->closeInfo.code, msg->closeInfo.reason);
+                            state->webSocket().close(msg.closeInfo.code, msg.closeInfo.reason);
                         }
-                        else if (msg->type == ix::WebSocketMessageType::Message)
+                        else if (msg.type == ix::WebSocketMessageType::Message)
                         {
-                            state->webSocket().send(msg->str, msg->binary);
+                            state->webSocket().send(msg.str, msg.binary);
                         }
                     });
                 }

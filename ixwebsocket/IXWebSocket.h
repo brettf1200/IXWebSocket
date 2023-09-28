@@ -19,7 +19,6 @@
 #include "IXWebSocketSendData.h"
 #include "IXWebSocketSendInfo.h"
 #include "IXWebSocketTransport.h"
-#include "readerwriterqueue.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
@@ -38,7 +37,7 @@ namespace ix
         Closed = 3
     };
 
-    using OnMessageCallback = std::function<void(const WebSocketMessagePtr&)>;
+    using OnMessageCallback = std::function<void(const WebSocketMessage&)>;
 
     using OnTrafficTrackerCallback = std::function<void(size_t size, bool incoming)>;
 
@@ -122,8 +121,6 @@ namespace ix
 
         void setAutoThreadName(bool enabled);
         bool isConnected() const;
-
-        moodycamel::ReaderWriterQueue<ix::WebSocketMessage> _queue;
 
     private:
         WebSocketSendInfo sendMessage(const IXWebSocketSendData& message,

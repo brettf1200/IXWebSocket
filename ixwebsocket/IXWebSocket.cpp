@@ -32,8 +32,7 @@ namespace ix
     const uint32_t WebSocket::kDefaultMinWaitBetweenReconnectionRetries(1);         // 1 ms
 
     WebSocket::WebSocket()
-        : _queue{1048576} // 2^20
-        , _onMessageCallback(OnMessageCallback())
+        : _onMessageCallback(OnMessageCallback())
         , _stop(false)
         , _automaticReconnection(true)
         , _maxWaitBetweenReconnectionRetries(kDefaultMaxWaitBetweenReconnectionRetries)
@@ -48,7 +47,7 @@ namespace ix
             [this](uint16_t code, const std::string& reason, size_t wireSize, bool remote)
             {
                 _onMessageCallback(
-                    ix::make_unique<WebSocketMessage>(WebSocketMessageType::Close,
+                    WebSocketMessage(WebSocketMessageType::Close,
                                                       emptyMsg,
                                                       wireSize,
                                                       WebSocketErrorInfo(),
@@ -237,9 +236,9 @@ namespace ix
             return status;
         }
 
-        _onMessageCallback(ix::make_unique<WebSocketMessage>(
+        _onMessageCallback(WebSocketMessage(
             WebSocketMessageType::Open,
-            emptyMsg,
+            std::move(emptyMsg),
             0,
             WebSocketErrorInfo(),
             WebSocketOpenInfo(status.uri, status.headers, status.protocol),
@@ -272,12 +271,9 @@ namespace ix
             return status;
         }
 
-        _queue.try_emplace(WebSocketMessageType::Open,
-                std::move(emptyMsg),
-                0,
-                WebSocketErrorInfo(),
-                WebSocketOpenInfo(status.uri, status.headers),
-                WebSocketCloseInfo());
+        _onMessageCallback(WebSocketMessage(WebSocketMessageType::Open,
+                    std::move(emptyMsg), 0, WebSocketErrorInfo(), WebSocketOpenInfo(status.uri, status.headers),
+                    WebSocketCloseInfo()));
 
 /*
         _onMessageCallback(
@@ -368,12 +364,10 @@ namespace ix
                 connectErr.reason = status.errorStr;
                 connectErr.http_status = status.http_status;
 
-                _queue.try_emplace(WebSocketMessageType::Error,
-                        std::move(emptyMsg),
-                        0,
-                        connectErr,
-                        WebSocketOpenInfo(),
-                        WebSocketCloseInfo());
+                _onMessageCallback(WebSocketMessage(WebSocketMessageType::Error,
+                            std::move(emptyMsg), 0, connectErr,
+                            WebSocketOpenInfo(),
+                            WebSocketCloseInfo()));
 /*
                 _onMessageCallback(ix::make_unique<WebSocketMessage>(WebSocketMessageType::Error,
                                                                      emptyMsg,
@@ -456,13 +450,13 @@ namespace ix
 
                     bool binary = messageKind == WebSocketTransport::MessageKind::MSG_BINARY;
 
-                    _queue.try_emplace(webSocketMessageType,
-                            std::move(msg),
-                            wireSize,
-                            webSocketErrorInfo,
-                            WebSocketOpenInfo(),
-                            WebSocketCloseInfo(),
-                            binary);
+                    _onMessageCallback(WebSocketMessage(webSocketMessageType,
+                                                                         msg,
+                                                                         wireSize,
+                                                                         webSocketErrorInfo,
+                                                                         WebSocketOpenInfo(),
+                                                                         WebSocketCloseInfo(),
+                                                                         binary));
 /*
                     _onMessageCallback(ix::make_unique<WebSocketMessage>(webSocketMessageType,
                                                                          msg,
